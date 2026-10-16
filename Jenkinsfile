@@ -14,7 +14,7 @@ pipeline {
     parameters {
         gitParameter(name: 'TAG', type: 'PT_TAG', defaultValue: '', description: 'Select the Git tag to build.')
         gitParameter(name: 'BRANCH', type: 'PT_BRANCH', defaultValue: '', description: 'Select the Git branch to build.')
-        choice(name: 'ACTION', choices: ['build', 'deploy', 'rollback'], description: 'Choose whether to deploy a new version or rollback to a previous version.')
+        choice(name: 'ACTION', choices: ['build','push', 'deploy', 'rollback'], description: 'Choose whether to deploy a new version or rollback to a previous version.')
     }
     
     stages {
@@ -53,16 +53,16 @@ pipeline {
                 }
             }
         }
-        stage('Push Image') {
+        stage('push') {
             when {
-                expression { params.ACTION == 'build' }
+                expression { params.ACTION == 'push' }
             }
             steps {
                 script {
                     withCredentials([usernamePassword(credentialsId: 'dockerhub', usernameVariable: 'DOCKER_USERNAME', passwordVariable: 'DOCKER_PASSWORD')]) {
-                        sh """
-                        echo $DOCKER_PASSWORD | docker login -u $DOCKER_USERNAME --password-stdin
-                        """
+                        sh '''
+                            echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+                         '''
                     }
                     // Changed to triple double quotes
                     sh """
